@@ -1,4 +1,4 @@
-const axios = require("axios").default;
+const axios = require("axios").default; 
 const path = require("path");
 const fs = require("fs");
 const setPic = require("./getPic");
@@ -10,38 +10,21 @@ const {
 
 require("dotenv").config();
 
-if (!process.env.NAME) throw new Error("Please specify NAME in environment.");
-if (!process.env.PIC) throw new Error("Please specify PIC in environment.");
-
-const picPath = process.env.PIC;
+// You can hardcode this URL directly instead of using environment variables.
+const picPath = "https://i.ibb.co/CBwsK8n/pic-85dfd57f.jpg"; // <-- Hardcoded
 const msgPath = process.env.SCROLL_MSG;
 
-//Local initialization
-const setLocalData = async () => {
-  try {
-    const pic = path.join(__dirname, "../local/", picPath);
-    let markup = "";
-    if (msgPath) {
-      const text = fs.readFileSync(path.join(__dirname, "../local/", msgPath), {
-        encoding: "utf-8",
-      });
-      markup = generateMarkupLocal(text);
-    }
-    await setPic(pic);
-    genIndex(markup);
-  } catch (e) {
-    throw new Error(e.message);
-  }
-};
+if (!picPath) throw new Error("Please specify PIC.");
 
-//Remote initialization
 const setRemoteData = async () => {
   try {
+    // Fetch the image from the hardcoded URL
     let res = await axios.get(picPath, {
       responseType: "arraybuffer",
     });
     const pic = res.data;
     let markup = "";
+
     if (msgPath) {
       const article = msgPath.split("/").pop();
       res = await axios.get(
@@ -53,6 +36,7 @@ const setRemoteData = async () => {
         ""
       );
     }
+
     await setPic(pic);
     genIndex(markup);
   } catch (e) {
@@ -60,6 +44,11 @@ const setRemoteData = async () => {
   }
 };
 
-if (process.argv[2] === "--local") setLocalData();
-else if (process.argv[2] === "--remote") setRemoteData();
-else console.log("Fetch mode not specified.");
+// You can still allow local initialization based on how you're using the file.
+if (process.argv[2] === "--local") {
+  setLocalData();
+} else if (process.argv[2] === "--remote") {
+  setRemoteData();
+} else {
+  console.log("Fetch mode not specified.");
+}
